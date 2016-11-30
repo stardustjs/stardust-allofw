@@ -185,7 +185,7 @@ export class Generator {
         }
     }
 
-    public compileSpecification(spec: Specification.Shape, asUniform: (name: string) => boolean) {
+    public compileSpecification(spec: Specification.Mark, asUniform: (name: string) => boolean) {
         this._vertexLines.addLine("#version 330");
         this._geometryLines.addLine("#version 330");
         this._geometryLines.addLine("layout(points) in;");

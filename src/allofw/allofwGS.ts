@@ -1,5 +1,5 @@
-import { Specification, Shape, Type, Binding, ShiftBinding, Platform, PlatformShape, PlatformShapeData } from "stardust-core";
-import { FlattenEmits } from "stardust-core";
+import { Specification, Mark, Type, Binding, ShiftBinding, Platform, PlatformMark, PlatformMarkData } from "stardust-core";
+import { flattenEmits } from "stardust-core";
 import { Dictionary, timeTask } from "stardust-core";
 import { Generator, GenerateMode, ViewType } from "./generatorGS";
 import { RuntimeError } from "stardust-core";
@@ -7,14 +7,14 @@ import { Pose } from "stardust-core";
 import * as AllofwUtils from "./allofwutils";
 import { GL3, OpenGLWindow, OmniStereo } from "allofw";
 
-class AllofwPlatformShapeProgram {
+class AllofwPlatformMarkProgram {
     private _program: GL3.Program;
     private _uniformLocations: Dictionary<number>;
     private _attribLocations: Dictionary<number>;
 
     constructor(
         platform: AllofwPlatform3D,
-        spec: Specification.Shape,
+        spec: Specification.Mark,
         asUniform: (name: string) => boolean
     ) {
         let generator = new Generator(platform.getPrefixCode());
@@ -84,39 +84,39 @@ class AllofwPlatformShapeProgram {
     }
 }
 
-export class AllofwPlatformShapeData extends PlatformShapeData {
+export class AllofwPlatformMarkData extends PlatformMarkData {
     public buffers: Dictionary<GL3.Buffer>;
     public vertexArray: GL3.VertexArray;
-    public vertexCount: number;
+    public ranges: [ number, number ][];
 }
 
-export class AllofwPlatformShape extends PlatformShape {
-    private _shape: Shape;
+export class AllofwPlatformMark extends PlatformMark {
+    private _mark: Mark;
     private _platform: AllofwPlatform3D;
     private _bindings: Dictionary<Binding>;
     private _shiftBindings: Dictionary<ShiftBinding>;
-    private _spec: Specification.Shape;
+    private _spec: Specification.Mark;
 
-    private _program: AllofwPlatformShapeProgram;
+    private _program: AllofwPlatformMarkProgram;
     private _pickIndex: number;
     private _minOffset: number;
     private _maxOffset: number;
 
     constructor(
         platform: AllofwPlatform3D,
-        shape: Shape,
-        spec: Specification.Shape,
+        mark: Mark,
+        spec: Specification.Mark,
         bindings: Dictionary<Binding>,
         shiftBindings: Dictionary<ShiftBinding>
     ) {
         super();
         this._platform = platform;
-        this._shape = shape;
+        this._mark = mark;
         this._bindings = bindings;
         this._shiftBindings = shiftBindings;
         this._spec = spec;
 
-        this._program = new AllofwPlatformShapeProgram(
+        this._program = new AllofwPlatformMarkProgram(
             this._platform,
             this._spec,
             (name) => this.isUniform(name)
@@ -142,8 +142,8 @@ export class AllofwPlatformShape extends PlatformShape {
             }
         }
     }
-    public initializeBuffers(): AllofwPlatformShapeData {
-        let data = new AllofwPlatformShapeData();
+    public initializeBuffers(): AllofwPlatformMarkData {
+        let data = new AllofwPlatformMarkData();
         data.vertexArray = new GL3.VertexArray();
         data.buffers = new Dictionary<GL3.Buffer>();;
         this._bindings.forEach((binding, name) => {
@@ -154,7 +154,6 @@ export class AllofwPlatformShape extends PlatformShape {
                 }
             }
         });
-        data.vertexCount = 0;
         let spec = this._spec;
         let program = this._program;
         let bindings = this._bindings;
@@ -186,6 +185,7 @@ export class AllofwPlatformShape extends PlatformShape {
             }
         }
         GL3.bindVertexArray(0);
+        data.ranges = [];
         return data;
     }
     // Is the input attribute compiled as uniform?
@@ -208,30 +208,61 @@ export class AllofwPlatformShape extends PlatformShape {
         this._program.use();
         this._program.setUniform(name, type, value);
     }
-    public uploadData(data: any[]): PlatformShapeData {
+    public uploadData(datas: any[][]): PlatformMarkData {
         let buffers = this.initializeBuffers();
+        buffers.ranges = [];
 
-        let n = data.length;
+        let repeatBegin = this._spec.repeatBegin || 0;
+        let repeatEnd = this._spec.repeatEnd || 0;
+
         let bindings = this._bindings;
+
+        let totalCount = 0;
+        datas.forEach((data) => {
+            let n = data.length;
+            if(n == 0) {
+                buffers.ranges.push(null);
+                return;
+            } else {
+                let c1 = totalCount;
+                totalCount += n + repeatBegin + repeatEnd;
+                let c2 = totalCount;
+                buffers.ranges.push([ c1, c2 ]);
+            }
+        });
 
         this._bindings.forEach((binding, name) => {
             let buffer = buffers.buffers.get(name);
             if(buffer == null) return;
 
             let type = binding.type;
-            let array = new Float32Array(type.primitiveCount * n);
-            binding.fillBinary(data, 1, array);
+            let array = new Float32Array(type.primitiveCount * totalCount);
+            let currentIndex = 0;
+            let multiplier = type.primitiveCount;
+
+            datas.forEach((data) => {
+                if(data.length == 0) return;
+                for(let i = 0; i < repeatBegin; i++) {
+                    binding.fillBinary([ data[0] ], 1, array.subarray(currentIndex, currentIndex + multiplier));
+                    currentIndex += multiplier;
+                }
+                binding.fillBinary(data, 1, array.subarray(currentIndex, currentIndex + data.length * multiplier));
+                currentIndex += data.length * multiplier;
+                for(let i = 0; i < repeatEnd; i++) {
+                    binding.fillBinary([ data[data.length - 1] ], 1, array.subarray(currentIndex, currentIndex + multiplier));
+                    currentIndex += multiplier;
+                }
+            });
 
             GL3.bindBuffer(GL3.ARRAY_BUFFER, buffer);
             GL3.bufferData(GL3.ARRAY_BUFFER, array.byteLength, array, GL3.STATIC_DRAW);
         });
-        buffers.vertexCount = n;
         return buffers;
     }
 
     // Render the graphics.
-    public renderBase(buffers: AllofwPlatformShapeData): void {
-        if(buffers.vertexCount > 0) {
+    public renderBase(buffers: AllofwPlatformMarkData, onRender: (i: number) => void): void {
+        if(buffers.ranges.length > 0) {
             let spec = this._spec;
             let bindings = this._bindings;
 
@@ -240,21 +271,26 @@ export class AllofwPlatformShape extends PlatformShape {
 
             program.use();
 
-            AllofwUtils.checkGLErrors("Before set attributes");
-
             GL3.bindVertexArray(buffers.vertexArray);
-            AllofwUtils.checkGLErrors("Before set uniforms");
             this._platform.omnistereo.setUniforms(program.id());
-            AllofwUtils.checkGLErrors("Before draw arrays");
+
             // Draw arrays
-            GL3.drawArrays(GL3.POINTS, 0, buffers.vertexCount - (this._maxOffset - this._minOffset));
-            AllofwUtils.checkGLErrors("After draw arrays");
+            buffers.ranges.forEach((range, index) => {
+                if(onRender) {
+                    onRender(index);
+                }
+                if(range != null) {
+                    program.use();
+                    GL3.drawArrays(GL3.POINTS, range[0], range[1] - range[0] - (this._maxOffset - this._minOffset));
+                }
+            });
+
             GL3.bindVertexArray(0);
         }
     }
 
-    public render(buffers: PlatformShapeData) {
-        this.renderBase(buffers as AllofwPlatformShapeData);
+    public render(buffers: PlatformMarkData, onRender: (i: number) => void) {
+        this.renderBase(buffers as AllofwPlatformMarkData, onRender);
     }
 }
 
@@ -290,7 +326,7 @@ export class AllofwPlatform3D extends Platform {
         return this._omnistereo.getShaderCode();
     }
 
-    public compile(shape: Shape, spec: Specification.Shape, bindings: Dictionary<Binding>, shiftBindings: Dictionary<ShiftBinding>): PlatformShape {
-        return new AllofwPlatformShape(this, shape, spec, bindings, shiftBindings);
+    public compile(mark: Mark, spec: Specification.Mark, bindings: Dictionary<Binding>, shiftBindings: Dictionary<ShiftBinding>): PlatformMark {
+        return new AllofwPlatformMark(this, mark, spec, bindings, shiftBindings);
     }
 }
