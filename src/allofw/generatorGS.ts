@@ -3,6 +3,7 @@ import { generateIntrinsicFunction } from "./intrinsics";
 import { Specification } from "stardust-core";
 import { Binding } from "stardust-core";
 import { Dictionary } from "stardust-core";
+import { flattenEmits } from "stardust-core";
 
 export enum GenerateMode {
     NORMAL   = 0,
@@ -189,7 +190,8 @@ export class Generator {
         this._vertexLines.addLine("#version 330");
         this._geometryLines.addLine("#version 330");
         this._geometryLines.addLine("layout(points) in;");
-        this._geometryLines.addLine("layout(triangle_strip, max_vertices = 50) out;");
+        let maxVertices = flattenEmits(spec).count;
+        this._geometryLines.addLine(`layout(triangle_strip, max_vertices = ${maxVertices}) out;`);
         this._geometryLines.addLine(this._prefixCode);
         // Global attributes.
         for(let name in spec.input) {
