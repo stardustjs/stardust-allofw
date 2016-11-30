@@ -1,0 +1,28 @@
+{
+  "name": "stardust-allofw",
+  "description": "Allofw platform for Stardust",
+  "author": {
+    "name": "Donghao Ren",
+    "email": "donghao.ren@gmail.com",
+    "url": "https://donghaoren.org"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:stardust-vis/stardust-allofw.git"
+  },
+  "main": "dist/stardust-allofw.js",
+  "typings": "dist/stardust-allofw.d.ts",
+  "scripts": {
+    "build": "tsc -p src",
+    "prepublish": "npm run build",
+    "watch": "tsc -w -p src"
+  },
+  "dependencies": {
+    "stardust-core": "0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.0"
+  },
+  "license": "BSD-3-Clause"
+}
