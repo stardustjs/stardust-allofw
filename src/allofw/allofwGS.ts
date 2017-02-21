@@ -1,4 +1,4 @@
-import { Specification, Mark, Type, Binding, ShiftBinding, Platform, PlatformMark, PlatformMarkData } from "stardust-core";
+import { Specification, Mark, Type, Binding, ShiftBinding, Platform, PlatformMark, PlatformMarkData, BindingType, TextureBinding } from "stardust-core";
 import { flattenEmits } from "stardust-core";
 import { Dictionary, timeTask } from "stardust-core";
 import { Generator, GenerateMode, ViewType } from "./generatorGS";
@@ -169,7 +169,7 @@ export class AllofwPlatformMark extends PlatformMark {
                 let shift = this._shiftBindings.get(name);
                 GL3.bindBuffer(GL3.ARRAY_BUFFER, data.buffers.get(shift.name));
                 GL3.enableVertexAttribArray(attributeLocation);
-                let type = bindings.get(shift.name).type;
+                let type = bindings.get(shift.name).valueType;
                 GL3.vertexAttribPointer(attributeLocation,
                     type.primitiveCount, type.primitive == "float" ? GL3.FLOAT : GL3.INT,
                     GL3.FALSE, 0, type.size * (shift.offset - minOffset)
@@ -177,7 +177,7 @@ export class AllofwPlatformMark extends PlatformMark {
             } else {
                 GL3.bindBuffer(GL3.ARRAY_BUFFER, data.buffers.get(name));
                 GL3.enableVertexAttribArray(attributeLocation);
-                let type = bindings.get(name).type;
+                let type = bindings.get(name).valueType;
                 GL3.vertexAttribPointer(attributeLocation,
                     type.primitiveCount, type.primitive == "float" ? GL3.FLOAT : GL3.INT,
                     GL3.FALSE, 0, type.size * (-minOffset)
@@ -195,18 +195,20 @@ export class AllofwPlatformMark extends PlatformMark {
             if(this._shiftBindings.get(name) == null) {
                 throw new RuntimeError(`attribute ${name} is not specified.`);
             } else {
-                return !this._bindings.get(this._shiftBindings.get(name).name).isFunction;
+                return this._bindings.get(this._shiftBindings.get(name).name).bindingType != BindingType.FUNCTION;
             }
         } else {
             // Look at the binding to determine.
-            return !this._bindings.get(name).isFunction;
+            return this._bindings.get(name).bindingType != BindingType.FUNCTION;
         }
     }
     public updateUniform(name: string, value: Specification.Value): void {
         let binding = this._bindings.get(name);
-        let type = binding.type;
+        let type = binding.valueType;
         this._program.use();
         this._program.setUniform(name, type, value);
+    }
+    public updateTexture(name: string, value: TextureBinding): void {
     }
     public uploadData(datas: any[][]): PlatformMarkData {
         let buffers = this.initializeBuffers();
@@ -235,7 +237,7 @@ export class AllofwPlatformMark extends PlatformMark {
             let buffer = buffers.buffers.get(name);
             if(buffer == null) return;
 
-            let type = binding.type;
+            let type = binding.valueType;
             let array = new Float32Array(type.primitiveCount * totalCount);
             let currentIndex = 0;
             let multiplier = type.primitiveCount;

@@ -19,10 +19,12 @@
     "watch": "tsc -w -p src"
   },
   "dependencies": {
-    "stardust-core": "0.0.1"
+    "stardust-core": "0.0.1",
+    "allofw": "0.0.7"
   },
   "devDependencies": {
-    "typescript": "^2.0.0"
+    "typescript": "^2.0.0",
+    "@types/node": "^6.0.0"
   },
   "license": "BSD-3-Clause"
 }
