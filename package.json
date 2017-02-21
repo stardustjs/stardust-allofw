@@ -6,7 +6,10 @@
     "email": "donghao.ren@gmail.com",
     "url": "https://donghaoren.org"
   },
-  "version": "0.0.1",
+  "files": [
+    "dist"
+  ],
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "git@github.com:stardust-vis/stardust-allofw.git"
@@ -19,7 +22,7 @@
     "watch": "tsc -w -p src"
   },
   "dependencies": {
-    "stardust-core": "0.0.1",
+    "stardust-core": "0.0.2",
     "allofw": "0.0.7"
   },
   "devDependencies": {
