@@ -15,10 +15,10 @@ class AllofwPlatformMarkProgram {
     constructor(
         platform: AllofwPlatform3D,
         spec: Specification.Mark,
+        shader: Specification.Shader,
         asUniform: (name: string) => boolean
     ) {
-        let generator = new Generator(platform.getPrefixCode());
-        generator.compileSpecification(spec, asUniform);
+        let generator = new Generator(platform.getPrefixCode(), spec, shader, asUniform);
         let codes = {
             vertex: generator.getVertexCode(),
             geometry: generator.getGeometryCode(),
@@ -96,6 +96,7 @@ export class AllofwPlatformMark extends PlatformMark {
     private _bindings: Dictionary<Binding>;
     private _shiftBindings: Dictionary<ShiftBinding>;
     private _spec: Specification.Mark;
+    private _shader: Specification.Shader;
 
     private _program: AllofwPlatformMarkProgram;
     private _pickIndex: number;
@@ -106,6 +107,7 @@ export class AllofwPlatformMark extends PlatformMark {
         platform: AllofwPlatform3D,
         mark: Mark,
         spec: Specification.Mark,
+        shader: Specification.Shader,
         bindings: Dictionary<Binding>,
         shiftBindings: Dictionary<ShiftBinding>
     ) {
@@ -115,10 +117,12 @@ export class AllofwPlatformMark extends PlatformMark {
         this._bindings = bindings;
         this._shiftBindings = shiftBindings;
         this._spec = spec;
+        this._shader = shader;
 
         this._program = new AllofwPlatformMarkProgram(
             this._platform,
             this._spec,
+            this._shader,
             (name) => this.isUniform(name)
         );
 
@@ -328,7 +332,7 @@ export class AllofwPlatform3D extends Platform {
         return this._omnistereo.getShaderCode();
     }
 
-    public compile(mark: Mark, spec: Specification.Mark, bindings: Dictionary<Binding>, shiftBindings: Dictionary<ShiftBinding>): PlatformMark {
-        return new AllofwPlatformMark(this, mark, spec, bindings, shiftBindings);
+    public compile(mark: Mark, spec: Specification.Mark, shader: Specification.Shader, bindings: Dictionary<Binding>, shiftBindings: Dictionary<ShiftBinding>): PlatformMark {
+        return new AllofwPlatformMark(this, mark, spec, shader, bindings, shiftBindings);
     }
 }
