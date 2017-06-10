@@ -9,7 +9,7 @@
   "files": [
     "dist"
   ],
-  "version": "0.0.2",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:stardust-vis/stardust-allofw.git"
@@ -22,8 +22,8 @@
     "watch": "tsc -w -p src"
   },
   "dependencies": {
-    "stardust-core": "0.0.2",
-    "allofw": "0.0.7"
+    "stardust-core": "^0.1.0",
+    "allofw": "0.0.8"
   },
   "devDependencies": {
     "typescript": "^2.0.0",
