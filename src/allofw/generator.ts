@@ -67,10 +67,10 @@ export class Generator extends ProgramGenerator {
     public _geometryCode: string;
     public _fragmentCode: string;
 
-    public _currentIndent: string;
-    public _hasColor: boolean;
-    public _hasNormal: boolean;
-    public _positionType: string;
+    public _voutMapping: Dictionary<string>;
+    public _goutMapping: Dictionary<string>;
+    public _foutMapping: Dictionary<string>;
+    public _fragmentOutputName: string;
 
     constructor(prefixCode: string, spec: Specification.Mark, shader: Specification.Shader, asUniform: (name: string) => boolean) {
         super(spec, shader, asUniform);
@@ -83,11 +83,6 @@ export class Generator extends ProgramGenerator {
 
         this.compile();
     }
-
-    public _voutMapping: Dictionary<string>;
-    public _goutMapping: Dictionary<string>;
-    public _foutMapping: Dictionary<string>;
-    public _fragmentOutputName: string;
 
     public compile() {
         let spec = this._spec;
