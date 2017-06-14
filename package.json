@@ -12,7 +12,7 @@
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "git@github.com:stardust-vis/stardust-allofw.git"
+    "url": "https://github.com/stardustjs/stardust-allofw.git"
   },
   "main": "dist/stardust-allofw.js",
   "typings": "dist/stardust-allofw.d.ts",
