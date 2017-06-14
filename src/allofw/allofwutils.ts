@@ -1,5 +1,3 @@
-/// <reference path="allofw.d.ts" />
-
 import { GL3 } from "allofw";
 import { RuntimeError } from "stardust-core";
 
