@@ -54,7 +54,6 @@ export class GLSLFragmentShaderGenerator extends ShaderGenerator {
     }
 
     public addEmitStatement(sEmit: Specification.StatementEmit) {
-        console.log(sEmit);
         this.addLine(`${this._parent._fragmentOutputName} = ${this.generateExpression(sEmit.attributes["color"])};`);
     }
 }
