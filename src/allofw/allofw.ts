@@ -1,6 +1,5 @@
 import { Specification, Mark, Type, Binding, ShiftBinding, Platform, PlatformMark, PlatformMarkData, BindingType, TextureBinding } from "stardust-core";
-import { flattenEmits } from "stardust-core";
-import { Dictionary, timeTask } from "stardust-core";
+import { Dictionary } from "stardust-core";
 import { Generator, GenerateMode, ViewType } from "./generator";
 import { RuntimeError } from "stardust-core";
 import { Pose } from "stardust-core";

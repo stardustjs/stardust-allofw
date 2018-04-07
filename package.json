@@ -9,7 +9,7 @@
   "files": [
     "dist"
   ],
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/stardustjs/stardust-allofw.git"
@@ -17,13 +17,13 @@
   "main": "dist/stardust-allofw.js",
   "typings": "dist/stardust-allofw.d.ts",
   "scripts": {
-    "build": "tsc -p src",
+    "build": "tsc -p .",
     "prepublish": "npm run build",
-    "watch": "tsc -w -p src"
+    "watch": "tsc -w -p ."
   },
   "dependencies": {
-    "stardust-core": "^0.1.0",
-    "allofw": "0.0.8"
+    "allofw": "0.1.0",
+    "stardust-core": "0.2.0"
   },
   "devDependencies": {
     "typescript": "^2.0.0",

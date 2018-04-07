@@ -1,4 +1,4 @@
-import { forEachIntrinsicFunction, forEachTypeConversion, getInternalName } from "stardust-core";
+import { Intrinsics } from "stardust-core";
 import { Dictionary } from "stardust-core";
 
 type IntrinsicImplementation = (...args: string[]) => string;
@@ -7,7 +7,7 @@ let intrinsicImplementations = new Dictionary<IntrinsicImplementation>();
 let intrinsicsCodeBase = new Dictionary<string>();
 
 function ImplementFunction(name: string, argTypes: string[], returnType: string, code: IntrinsicImplementation) {
-    let internalName = getInternalName({ name: name, argTypes: argTypes, returnType: returnType });
+    let internalName = Intrinsics.getInternalName({ name: name, argTypes: argTypes, returnType: returnType });
     intrinsicImplementations.set(internalName, code);
 }
 
@@ -16,7 +16,7 @@ function ImplementSimpleFunction(name: string, argTypes: string[], returnType: s
         return `${funcName}(${args.join(", ")})`;
     });
     if(funcCode) {
-        let internalName = getInternalName({ name: name, argTypes: argTypes, returnType: returnType });
+        let internalName = Intrinsics.getInternalName({ name: name, argTypes: argTypes, returnType: returnType });
         intrinsicsCodeBase.set(internalName, funcCode);
     }
 }

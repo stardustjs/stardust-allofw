@@ -3,7 +3,7 @@ import { ShaderGenerator, ProgramGenerator } from "../glsl/glsl";
 import { Specification } from "stardust-core";
 import { Binding } from "stardust-core";
 import { Dictionary } from "stardust-core";
-import { flattenEmits } from "stardust-core";
+import { Compiler } from "stardust-core";
 
 export enum GenerateMode {
     NORMAL   = 0,
@@ -97,7 +97,7 @@ export class Generator extends ProgramGenerator {
         this._fragment.addLine("#version 330");
 
         this._geometry.addLine("layout(points) in;");
-        let maxVertices = flattenEmits(spec).count;
+        let maxVertices = Compiler.Transforms.flattenEmits(spec).count;
         this._geometry.addLine(`layout(triangle_strip, max_vertices = ${maxVertices}) out;`);
 
         // Input attributes
