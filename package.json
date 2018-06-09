@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "allofw": "0.1.0",
-    "stardust-core": "0.2.0"
+    "stardust-core": "^0.2.0"
   },
   "devDependencies": {
     "typescript": "^2.0.0",
